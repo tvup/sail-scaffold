@@ -2,6 +2,8 @@
 
 A self-hosted Laravel project scaffolding service that generates ready-to-run projects with pre-configured Sail services, Composer/npm packages, custom files, and Docker services.
 
+![Front page](docs/screenshots/front-page.png)
+
 ## How It Works
 
 The application serves a bash install script via HTTP. Developers run a single `curl` command to scaffold a full Laravel project with Docker (Sail) out of the box.
@@ -41,6 +43,8 @@ curl -s "http://localhost/my-app?with=pgsql,redis,mailpit" | bash
 ## Admin Panel
 
 Accessible at `/admin`. Manage all aspects of the generated install script:
+
+![Admin dashboard](docs/screenshots/admin-dashboard.png)
 
 | Section | Route | Purpose |
 |---------|-------|---------|
