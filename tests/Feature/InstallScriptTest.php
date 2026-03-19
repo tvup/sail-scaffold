@@ -395,6 +395,16 @@ class InstallScriptTest extends TestCase
         $response = $this->get('/my-app');
 
         $response->assertStatus(200);
-        $response->assertSee('|| warn "Command failed: My cmd"', false);
+        $response->assertSee(') < /dev/null || warn "Command failed: My cmd"', false);
+    }
+
+    public function test_install_script_ends_with_exec_shell(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertSee('exec $SHELL < /dev/tty', false);
     }
 }

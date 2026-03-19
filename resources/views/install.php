@@ -218,7 +218,7 @@ $SUDO chown -R $USER: .
 # Post-install commands
 <?php foreach ($commands as $cmd) { ?>
 echo -e "${YELLOW}Running: <?php echo e($cmd->name); ?>...${NC}"
-<?php echo str_replace(array_keys($placeholders), array_values($placeholders), $cmd->command); ?> || warn "Command failed: <?php echo e($cmd->name); ?>"
+(<?php echo str_replace(array_keys($placeholders), array_values($placeholders), $cmd->command); ?>) < /dev/null || warn "Command failed: <?php echo e($cmd->name); ?>"
 <?php } ?>
 <?php } ?>
 
@@ -236,3 +236,6 @@ else
 fi
 echo -e "${CYAN}    cd ${APP_NAME} && ./vendor/bin/sail up${NC}"
 echo ""
+
+# Drop into the project directory
+exec $SHELL < /dev/tty

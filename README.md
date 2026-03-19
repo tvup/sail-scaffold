@@ -16,10 +16,12 @@ Replace `my-app` with your desired project name.
 
 The generated script runs through four phases:
 
-1. **Scaffold** — Creates a Laravel project, installs Sail with selected services, and installs Composer/npm packages in a single Docker run (package failures become warnings, not fatal errors)
+1. **Scaffold** — Creates a Laravel project, installs Sail with selected services, and installs Composer/npm packages in a single Docker run (output streams live; package failures become warnings, not fatal errors)
 2. **Docker Services** — Appends custom services to `compose.yml`
 3. **Pull** — Downloads Sail container images for selected services (with retries)
 4. **Build** — Builds the Docker environment
+
+After completion, any configured **post-install commands** run (e.g. `sail up -d`, `sail artisan migrate`), and your shell automatically lands in the new project directory.
 
 ## Service Selection
 
@@ -53,10 +55,11 @@ Accessible at `/admin`. Manage all aspects of the generated install script:
 | npm Packages | `/admin/npm-packages` | Manage JavaScript dependencies |
 | Files | `/admin/files` | Custom files injected into generated projects |
 | Docker Services | `/admin/docker-services` | Extra Docker services for `compose.yml` |
+| Commands | `/admin/commands` | Post-install shell commands (run in sort order) |
 
 ### Placeholders
 
-Custom files support placeholders that resolve at install time:
+Custom files and commands support placeholders that resolve at install time:
 
 | Placeholder | Resolves To |
 |-------------|-------------|
