@@ -36,6 +36,26 @@ class InstallScriptTest extends TestCase
         $response->assertSee('DOCKER_IMAGE="laravelsail/php85-composer:latest"', false);
     }
 
+    public function test_install_script_ensures_sail_is_installed_before_sail_install(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertSee('composer show laravel/sail 2>/dev/null || composer require laravel/sail --no-interaction', false);
+    }
+
+    public function test_install_script_pulls_image_before_docker_run(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertSee('docker pull "$DOCKER_IMAGE"', false);
+    }
+
     public function test_install_script_does_not_use_set_e(): void
     {
         BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
@@ -201,7 +221,7 @@ class InstallScriptTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('compose.override.yml', false);
-        $response->assertSee("ports:", false);
+        $response->assertSee('ports:', false);
         $response->assertSee("'3307:3306'", false);
     }
 
@@ -224,7 +244,7 @@ class InstallScriptTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('SERVICES="mysql,redis"', false);
-        $response->assertSee('--with=${SERVICES}', false);
+        $response->assertSee('sail:install --with=', false);
         $response->assertSee('compose.override.yml', false);
     }
 
@@ -248,7 +268,7 @@ class InstallScriptTest extends TestCase
         $response = $this->get('/my-app');
 
         $response->assertStatus(200);
-        $response->assertSee('retry 3 5 ./vendor/bin/sail pull', false);
+        $response->assertSee('retry 3 5 ./vendor/bin/sail pull ${SERVICES//,/ }', false);
         $response->assertSee('retry 2 5 ./vendor/bin/sail build', false);
     }
 
@@ -262,7 +282,7 @@ class InstallScriptTest extends TestCase
         $response->assertSee('${#WARNINGS[@]}', false);
     }
 
-    public function test_install_script_uses_phased_docker_runs(): void
+    public function test_install_script_uses_single_docker_run_for_scaffold_and_packages(): void
     {
         BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
         BoilerplateComposerPackage::factory()->create(['package' => 'laravel/pail', 'dev' => true, 'enabled' => true]);
@@ -271,9 +291,10 @@ class InstallScriptTest extends TestCase
         $content = $response->getContent();
 
         $response->assertStatus(200);
-        // Should have separate docker run calls: one for scaffold, one for packages
-        $this->assertGreaterThanOrEqual(2, substr_count($content, 'docker run'));
-        // Package phase should use PARTIAL_FAIL pattern
+        // Single docker run for scaffold + packages
+        $this->assertEquals(1, substr_count($content, 'docker run'));
+        // Packages and PARTIAL_FAIL pattern inside the same docker run
+        $response->assertSee('laravel/pail', false);
         $response->assertSee('PARTIAL_FAIL:', false);
     }
 }
