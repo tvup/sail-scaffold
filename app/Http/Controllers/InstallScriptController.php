@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BoilerplateCommand;
 use App\Models\BoilerplateComposerPackage;
 use App\Models\BoilerplateDockerService;
 use App\Models\BoilerplateFile;
@@ -56,6 +57,11 @@ class InstallScriptController extends Controller
             ->where('config', '!=', '')
             ->get();
 
+        $commands = BoilerplateCommand::query()
+            ->where('enabled', true)
+            ->orderBy('sort_order')
+            ->get();
+
         $hasVitePlugin = $npmPackages->contains(fn ($pkg): bool => $pkg->package === '@tailwindcss/vite');
 
         $servicesString = implode(',', $services);
@@ -82,6 +88,7 @@ class InstallScriptController extends Controller
             'sailServiceOverrides' => $sailServiceOverrides,
             'hasVitePlugin' => $hasVitePlugin,
             'placeholders' => $placeholders,
+            'commands' => $commands,
             'dockerImage' => config('boilerplate.docker_image'),
         ])->render();
 
