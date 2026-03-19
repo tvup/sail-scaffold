@@ -1,0 +1,13 @@
+node_modules/
+vendor/
+.env
+database/*.sqlite
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+.git/
+.claude/
+.idea/
+.vscode/
+tests/
