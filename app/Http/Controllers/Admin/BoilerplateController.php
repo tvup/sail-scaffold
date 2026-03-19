@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BoilerplateCommand;
 use App\Models\BoilerplateComposerPackage;
 use App\Models\BoilerplateDockerService;
 use App\Models\BoilerplateFile;
@@ -22,6 +23,7 @@ class BoilerplateController extends Controller
             'composerPackages' => BoilerplateComposerPackage::query()->orderBy('package')->get(),
             'npmPackages' => BoilerplateNpmPackage::query()->orderBy('package')->get(),
             'dockerServices' => BoilerplateDockerService::query()->orderBy('name')->get(),
+            'commands' => BoilerplateCommand::query()->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -289,5 +291,71 @@ class BoilerplateController extends Controller
         $service->delete();
 
         return redirect()->route('admin.docker-services')->with('success', 'Docker service removed.');
+    }
+
+    // --- Post-Install Commands ---
+
+    public function commands(): View
+    {
+        return view('admin.commands', [
+            'commands' => BoilerplateCommand::query()->orderBy('sort_order')->get(),
+        ]);
+    }
+
+    public function storeCommand(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'command' => ['required', 'string'],
+            'sort_order' => ['integer'],
+            'enabled' => ['boolean'],
+        ]);
+
+        BoilerplateCommand::query()->create([
+            'name' => $validated['name'],
+            'command' => $validated['command'],
+            'sort_order' => $validated['sort_order'] ?? 0,
+            'enabled' => $request->boolean('enabled', true),
+        ]);
+
+        return redirect()->route('admin.commands')->with('success', 'Command added.');
+    }
+
+    public function editCommand(BoilerplateCommand $command): View
+    {
+        return view('admin.command-edit', ['command' => $command]);
+    }
+
+    public function updateCommand(Request $request, BoilerplateCommand $command): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'command' => ['required', 'string'],
+            'sort_order' => ['integer'],
+            'enabled' => ['boolean'],
+        ]);
+
+        $command->update([
+            'name' => $validated['name'],
+            'command' => $validated['command'],
+            'sort_order' => $validated['sort_order'] ?? 0,
+            'enabled' => $request->boolean('enabled'),
+        ]);
+
+        return redirect()->route('admin.commands')->with('success', 'Command updated.');
+    }
+
+    public function toggleCommand(BoilerplateCommand $command): RedirectResponse
+    {
+        $command->update(['enabled' => ! $command->enabled]);
+
+        return redirect()->route('admin.commands');
+    }
+
+    public function destroyCommand(BoilerplateCommand $command): RedirectResponse
+    {
+        $command->delete();
+
+        return redirect()->route('admin.commands')->with('success', 'Command removed.');
     }
 }

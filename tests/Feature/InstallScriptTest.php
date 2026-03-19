@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BoilerplateCommand;
 use App\Models\BoilerplateComposerPackage;
 use App\Models\BoilerplateDockerService;
 use App\Models\BoilerplateFile;
@@ -312,5 +313,70 @@ class InstallScriptTest extends TestCase
         // Packages and PARTIAL_FAIL pattern inside the same docker run
         $response->assertSee('laravel/pail', false);
         $response->assertSee('PARTIAL_FAIL:', false);
+    }
+
+    public function test_install_script_includes_post_install_commands(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+        BoilerplateCommand::factory()->create(['name' => 'Assign ports', 'command' => 'assign_forward_instance_ports', 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertSee('assign_forward_instance_ports', false);
+        $response->assertSee('Running: Assign ports', false);
+    }
+
+    public function test_install_script_skips_disabled_commands(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+        BoilerplateCommand::factory()->create(['name' => 'Disabled cmd', 'command' => 'should_not_appear', 'enabled' => false]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('should_not_appear', false);
+    }
+
+    public function test_install_script_runs_commands_in_sort_order(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+        BoilerplateCommand::factory()->create(['name' => 'Second', 'command' => 'run_second', 'sort_order' => 10, 'enabled' => true]);
+        BoilerplateCommand::factory()->create(['name' => 'First', 'command' => 'run_first', 'sort_order' => 1, 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+        $content = $response->getContent();
+
+        $response->assertStatus(200);
+        $firstPos = strpos($content, 'run_first');
+        $secondPos = strpos($content, 'run_second');
+        $this->assertLessThan($secondPos, $firstPos, 'Commands must run in sort_order');
+    }
+
+    public function test_install_script_replaces_placeholders_in_commands(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+        BoilerplateCommand::factory()->create([
+            'name' => 'Setup ports',
+            'command' => 'assign_ports :APP_NAME: :SERVICES:',
+            'enabled' => true,
+        ]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertSee('assign_ports my-app mysql', false);
+        $response->assertDontSee(':APP_NAME:', false);
+    }
+
+    public function test_install_script_commands_use_warn_on_failure(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+        BoilerplateCommand::factory()->create(['name' => 'My cmd', 'command' => 'do_something', 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+
+        $response->assertStatus(200);
+        $response->assertSee('|| warn "Command failed: My cmd"', false);
     }
 }

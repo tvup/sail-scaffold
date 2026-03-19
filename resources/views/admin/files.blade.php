@@ -5,6 +5,8 @@
 @section('content')
     <h1 class="text-2xl font-bold text-cyan-400 mb-6">Custom Files</h1>
 
+    <x-placeholder-info />
+
     {{-- Add new --}}
     <form action="{{ route('admin.files.store') }}" method="POST" class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
         @csrf

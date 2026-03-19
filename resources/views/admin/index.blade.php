@@ -40,5 +40,12 @@
             <span class="text-cyan-400 font-mono text-2xl">{{ $dockerServices->where('enabled', true)->count() }}</span>
             <span class="text-gray-500 text-sm"> / {{ $dockerServices->count() }} active</span>
         </a>
+
+        <a href="{{ route('admin.commands') }}" class="block bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-cyan-500 transition-colors">
+            <h2 class="text-lg font-semibold text-white mb-2">Post-Install Commands</h2>
+            <p class="text-gray-400 text-sm mb-4">Shell commands run after installation</p>
+            <span class="text-cyan-400 font-mono text-2xl">{{ $commands->where('enabled', true)->count() }}</span>
+            <span class="text-gray-500 text-sm"> / {{ $commands->count() }} active</span>
+        </a>
     </div>
 @endsection

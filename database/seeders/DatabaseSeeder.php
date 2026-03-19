@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             BoilerplateComposerPackageSeeder::class,
             BoilerplateNpmPackageSeeder::class,
             BoilerplateDockerServiceSeeder::class,
+            BoilerplateCommandSeeder::class,
         ]);
     }
 }

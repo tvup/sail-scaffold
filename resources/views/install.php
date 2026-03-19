@@ -210,6 +210,14 @@ retry 2 5 ./vendor/bin/sail build || warn "Sail build had errors — run manuall
 # Fix permissions again (sail build may create files as root)
 $SUDO chown -R $USER: .
 
+<?php if ($commands->isNotEmpty()) { ?>
+# Post-install commands
+<?php foreach ($commands as $cmd) { ?>
+echo -e "${YELLOW}Running: <?php echo e($cmd->name); ?>...${NC}"
+<?php echo str_replace(array_keys($placeholders), array_values($placeholders), $cmd->command); ?> || warn "Command failed: <?php echo e($cmd->name); ?>"
+<?php } ?>
+<?php } ?>
+
 # Summary
 echo ""
 if [ ${#WARNINGS[@]} -eq 0 ]; then

@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\Admin\BoilerplateController;
 use App\Http\Controllers\InstallScriptController;
+use App\Models\BoilerplateSailService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome', [
-        'services' => \App\Models\BoilerplateSailService::query()->orderBy('name')->get(),
+        'services' => BoilerplateSailService::query()->orderBy('name')->get(),
     ]);
 });
 
@@ -44,6 +45,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/docker-services/{service}/edit', [BoilerplateController::class, 'editDockerService'])->name('docker-services.edit');
     Route::patch('/docker-services/{service}/toggle', [BoilerplateController::class, 'toggleDockerService'])->name('docker-services.toggle');
     Route::delete('/docker-services/{service}', [BoilerplateController::class, 'destroyDockerService'])->name('docker-services.destroy');
+
+    Route::get('/commands', [BoilerplateController::class, 'commands'])->name('commands');
+    Route::post('/commands', [BoilerplateController::class, 'storeCommand'])->name('commands.store');
+    Route::get('/commands/{command}/edit', [BoilerplateController::class, 'editCommand'])->name('commands.edit');
+    Route::put('/commands/{command}', [BoilerplateController::class, 'updateCommand'])->name('commands.update');
+    Route::patch('/commands/{command}/toggle', [BoilerplateController::class, 'toggleCommand'])->name('commands.toggle');
+    Route::delete('/commands/{command}', [BoilerplateController::class, 'destroyCommand'])->name('commands.destroy');
 });
 
 // Install script endpoint — must be last to avoid catching other routes
