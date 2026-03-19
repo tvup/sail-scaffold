@@ -49,26 +49,7 @@ if [ -d "$APP_NAME" ]; then
     exit 1
 fi
 
-# ⟦1/5⟧ Critical: scaffold project + install Sail
-echo -e "${YELLOW}⟦1/5⟧ Creating Laravel project via Sail...${NC}"
-
-if ! docker run --rm \
-    -v "$(pwd)":/opt \
-    -w /opt \
-    "$DOCKER_IMAGE" \
-    bash -c "
-        laravel new ${APP_NAME} --no-interaction && \
-        cd ${APP_NAME} && \
-        php artisan sail:install --with=${SERVICES} --no-interaction && \
-        echo 'done'
-    "; then
-    echo -e "${RED}Failed to scaffold project. Aborting.${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}✓ Project scaffolded${NC}"
-
-# ⟦2/5⟧ Optional: install extra packages (fault-tolerant)
+# ⟦1/4⟧ Critical: scaffold project + install Sail + packages
 <?php
 $devComposer = $composerPackages->where('dev', true);
 $prodComposer = $composerPackages->where('dev', false);
@@ -76,54 +57,87 @@ $devNpm = $npmPackages->where('dev', true);
 $prodNpm = $npmPackages->where('dev', false);
 $hasPackages = $composerPackages->isNotEmpty() || $npmPackages->isNotEmpty();
 ?>
-<?php if ($hasPackages): ?>
-echo -e "${YELLOW}⟦2/5⟧ Installing additional packages...${NC}"
+echo -e "${YELLOW}⟦1/4⟧ Creating Laravel project via Sail...${NC}"
 
-PACKAGE_OUTPUT=$(docker run --rm \
+# Pull latest image from Docker Hub if available, otherwise use local
+docker pull "$DOCKER_IMAGE" 2>/dev/null && echo -e "${GREEN}✓ Using latest image from Docker Hub${NC}" \
+    || echo -e "${YELLOW}  Image not found on Docker Hub — using local image${NC}"
+
+SCAFFOLD_OUTPUT=$(docker run --rm \
     -v "$(pwd)":/opt \
-    -w /opt/<?php echo e($appName); ?> \
+    -w /opt \
     "$DOCKER_IMAGE" \
     bash -c '
         FAILED=""
-<?php if ($prodComposer->isNotEmpty()): ?>
-<?php foreach ($prodComposer as $pkg): ?>
+        laravel new '"${APP_NAME}"' --no-interaction && \
+        cd '"${APP_NAME}"' && \
+        composer show laravel/sail 2>/dev/null || composer require laravel/sail --no-interaction && \
+        php artisan sail:install --with='"${SERVICES}"' --no-interaction
+<?php if ($prodComposer->isNotEmpty()) { ?>
+<?php foreach ($prodComposer as $pkg) { ?>
         composer require <?php echo e($pkg->package); ?> --no-interaction 2>&1 || FAILED="$FAILED composer:<?php echo e($pkg->package); ?>"
-<?php endforeach; ?>
-<?php endif; ?>
-<?php if ($devComposer->isNotEmpty()): ?>
-<?php foreach ($devComposer as $pkg): ?>
+<?php } ?>
+<?php } ?>
+<?php if ($devComposer->isNotEmpty()) { ?>
+<?php foreach ($devComposer as $pkg) { ?>
         composer require <?php echo e($pkg->package); ?> --dev --no-interaction 2>&1 || FAILED="$FAILED composer:<?php echo e($pkg->package); ?>"
-<?php endforeach; ?>
-<?php endif; ?>
-<?php if ($prodNpm->isNotEmpty()): ?>
-<?php foreach ($prodNpm as $pkg): ?>
+<?php } ?>
+<?php } ?>
+<?php if ($prodNpm->isNotEmpty()) { ?>
+<?php foreach ($prodNpm as $pkg) { ?>
         npm install <?php echo e($pkg->package); ?> 2>&1 || FAILED="$FAILED npm:<?php echo e($pkg->package); ?>"
-<?php endforeach; ?>
-<?php endif; ?>
-<?php if ($devNpm->isNotEmpty()): ?>
-<?php foreach ($devNpm as $pkg): ?>
+<?php } ?>
+<?php } ?>
+<?php if ($devNpm->isNotEmpty()) { ?>
+<?php foreach ($devNpm as $pkg) { ?>
         npm install --save-dev <?php echo e($pkg->package); ?> 2>&1 || FAILED="$FAILED npm:<?php echo e($pkg->package); ?>"
-<?php endforeach; ?>
-<?php endif; ?>
+<?php } ?>
+<?php } ?>
         if [ -n "$FAILED" ]; then echo "PARTIAL_FAIL:$FAILED"; fi
+        echo "SCAFFOLD_OK"
     ' 2>&1)
 
-if echo "$PACKAGE_OUTPUT" | grep -q "PARTIAL_FAIL:"; then
-    FAILED_PKGS=$(echo "$PACKAGE_OUTPUT" | grep "PARTIAL_FAIL:" | sed 's/PARTIAL_FAIL://')
+if ! echo "$SCAFFOLD_OUTPUT" | grep -q "SCAFFOLD_OK"; then
+    echo "$SCAFFOLD_OUTPUT"
+    echo -e "${RED}Failed to scaffold project. Aborting.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Project scaffolded${NC}"
+
+<?php if ($hasPackages) { ?>
+if echo "$SCAFFOLD_OUTPUT" | grep -q "PARTIAL_FAIL:"; then
+    FAILED_PKGS=$(echo "$SCAFFOLD_OUTPUT" | grep "PARTIAL_FAIL:" | sed 's/PARTIAL_FAIL://')
     for pkg in $FAILED_PKGS; do
         warn "Failed to install $pkg"
     done
 else
     echo -e "${GREEN}✓ Additional packages installed${NC}"
 fi
-<?php else: ?>
-echo -e "${YELLOW}⟦2/5⟧ No additional packages to install${NC}"
-<?php endif; ?>
+<?php } ?>
 
 cd "$APP_NAME"
 
+# Fix permissions (Docker creates files as root)
+if command -v doas &>/dev/null; then
+    SUDO="doas"
+elif command -v sudo &>/dev/null; then
+    SUDO="sudo"
+else
+    echo -e "${RED}Neither sudo nor doas is available. Exiting.${NC}"
+    exit 1
+fi
+
+if $SUDO -n true 2>/dev/null; then
+    $SUDO chown -R $USER: .
+else
+    echo -e "${YELLOW}Please provide your password so we can adjust your application's permissions.${NC}"
+    echo ""
+    $SUDO chown -R $USER: .
+fi
+
 # Local file operations (no Docker needed)
-<?php if ($hasVitePlugin): ?>
+<?php if ($hasVitePlugin) { ?>
 cat > vite.config.js << 'VITEEOF'
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
@@ -140,63 +154,61 @@ export default defineConfig({
 });
 VITEEOF
 echo -e "${GREEN}✓ Vite config generated${NC}"
-<?php endif; ?>
+<?php } ?>
 
-<?php foreach ($files as $file): ?>
-<?php if ($file->content === null || $file->content === ''): ?>
+<?php foreach ($files as $file) { ?>
+<?php if ($file->content === null || $file->content === '') { ?>
 mkdir -p '<?php echo e($file->path); ?>'
-<?php else: ?>
+<?php } else { ?>
 mkdir -p "$(dirname '<?php echo e($file->path); ?>')"
 cat > '<?php echo e($file->path); ?>' << 'FILEEOF'
 <?php echo str_replace(array_keys($placeholders), array_values($placeholders), $file->content); ?>
 
 FILEEOF
-<?php endif; ?>
-<?php endforeach; ?>
+<?php } ?>
+<?php } ?>
 
-<?php if ($sailServiceOverrides->isNotEmpty()): ?>
+<?php if ($sailServiceOverrides->isNotEmpty()) { ?>
 echo -e "${YELLOW}Creating compose.override.yml...${NC}"
 cat > compose.override.yml << 'OVERRIDEEOF'
 services:
-<?php foreach ($sailServiceOverrides as $override): ?>
+<?php foreach ($sailServiceOverrides as $override) { ?>
     <?php echo e($override->name); ?>:
 <?php echo $override->config; ?>
 
-<?php endforeach; ?>
+<?php } ?>
 OVERRIDEEOF
 echo -e "${GREEN}✓ Sail service overrides applied${NC}"
-<?php endif; ?>
+<?php } ?>
 
-<?php if ($dockerServices->isNotEmpty()): ?>
-echo -e "${YELLOW}⟦3/5⟧ Adding custom Docker services...${NC}"
+<?php if ($dockerServices->isNotEmpty()) { ?>
+echo -e "${YELLOW}⟦2/4⟧ Adding custom Docker services...${NC}"
 
 # Append custom services to compose.yml
 cat >> compose.yml << 'DOCKEREOF'
-<?php foreach ($dockerServices as $service): ?>
+<?php foreach ($dockerServices as $service) { ?>
     <?php echo e($service->name); ?>:
 <?php echo $service->config; ?>
 
-<?php endforeach; ?>
+<?php } ?>
 DOCKEREOF
 
 echo -e "${GREEN}✓ Custom Docker services added${NC}"
-<?php else: ?>
-echo -e "${YELLOW}⟦3/5⟧ No custom Docker services to add${NC}"
-<?php endif; ?>
+<?php } else { ?>
+echo -e "${YELLOW}⟦2/4⟧ No custom Docker services to add${NC}"
+<?php } ?>
 
-# ⟦4/5⟧ Pull + build (with retry, non-fatal)
-echo -e "${YELLOW}⟦4/5⟧ Pulling Sail images...${NC}"
-retry 3 5 ./vendor/bin/sail pull || warn "Some Sail images could not be pulled"
+# ⟦3/4⟧ Pull + build (with retry, non-fatal)
+echo -e "${YELLOW}⟦3/4⟧ Pulling Sail images...${NC}"
+if [ -n "$SERVICES" ] && [ "$SERVICES" != "none" ]; then
+    retry 3 5 ./vendor/bin/sail pull ${SERVICES//,/ } || warn "Some Sail images could not be pulled"
+fi
 
-echo -e "${YELLOW}⟦5/5⟧ Building containers...${NC}"
+echo -e "${YELLOW}⟦4/4⟧ Building containers...${NC}"
 retry 2 5 ./vendor/bin/sail build || warn "Sail build had errors — run manually with: ./vendor/bin/sail build"
 
-# Fix permissions
-if command -v doas > /dev/null 2>&1; then
-    doas chown -R $USER: .
-elif command -v sudo > /dev/null 2>&1; then
-    sudo chown -R $USER: .
-fi
+# Fix permissions again (sail build may create files as root)
+$SUDO chown -R $USER: .
 
 # Summary
 echo ""
