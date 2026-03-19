@@ -14,13 +14,12 @@ curl -s "http://localhost/my-app" | bash
 
 Replace `my-app` with your desired project name.
 
-The generated script runs through five phases:
+The generated script runs through four phases:
 
-1. **Scaffold** — Creates a Laravel project and installs Sail with the selected services
-2. **Packages** — Installs Composer and npm dependencies (fault-tolerant — failures become warnings)
-3. **Docker Services** — Appends custom services to `compose.yml`
-4. **Pull** — Downloads Sail container images (with retries)
-5. **Build** — Builds the Docker environment
+1. **Scaffold** — Creates a Laravel project, installs Sail with selected services, and installs Composer/npm packages in a single Docker run (package failures become warnings, not fatal errors)
+2. **Docker Services** — Appends custom services to `compose.yml`
+3. **Pull** — Downloads Sail container images for selected services (with retries)
+4. **Build** — Builds the Docker environment
 
 ## Service Selection
 

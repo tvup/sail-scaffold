@@ -282,6 +282,22 @@ class InstallScriptTest extends TestCase
         $response->assertSee('${#WARNINGS[@]}', false);
     }
 
+    public function test_install_script_fixes_permissions_before_local_file_operations(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+        BoilerplateNpmPackage::factory()->create(['package' => '@tailwindcss/vite', 'dev' => true, 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+        $content = $response->getContent();
+
+        $response->assertStatus(200);
+        $chownPos = strpos($content, 'chown -R');
+        $vitePos = strpos($content, 'vite.config.js');
+        $this->assertNotFalse($chownPos, 'chown -R should be present in the script');
+        $this->assertNotFalse($vitePos, 'vite.config.js should be present in the script');
+        $this->assertLessThan($vitePos, $chownPos, 'Permission fix must run before local file operations');
+    }
+
     public function test_install_script_uses_single_docker_run_for_scaffold_and_packages(): void
     {
         BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);

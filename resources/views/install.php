@@ -207,6 +207,9 @@ fi
 echo -e "${YELLOW}⟦4/4⟧ Building containers...${NC}"
 retry 2 5 ./vendor/bin/sail build || warn "Sail build had errors — run manually with: ./vendor/bin/sail build"
 
+# Fix permissions again (sail build may create files as root)
+$SUDO chown -R $USER: .
+
 # Summary
 echo ""
 if [ ${#WARNINGS[@]} -eq 0 ]; then
