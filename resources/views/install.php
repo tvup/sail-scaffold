@@ -118,6 +118,24 @@ fi
 
 cd "$APP_NAME"
 
+# Fix permissions (Docker creates files as root)
+if command -v doas &>/dev/null; then
+    SUDO="doas"
+elif command -v sudo &>/dev/null; then
+    SUDO="sudo"
+else
+    echo -e "${RED}Neither sudo nor doas is available. Exiting.${NC}"
+    exit 1
+fi
+
+if $SUDO -n true 2>/dev/null; then
+    $SUDO chown -R $USER: .
+else
+    echo -e "${YELLOW}Please provide your password so we can adjust your application's permissions.${NC}"
+    echo ""
+    $SUDO chown -R $USER: .
+fi
+
 # Local file operations (no Docker needed)
 <?php if ($hasVitePlugin) { ?>
 cat > vite.config.js << 'VITEEOF'
@@ -188,13 +206,6 @@ fi
 
 echo -e "${YELLOW}⟦4/4⟧ Building containers...${NC}"
 retry 2 5 ./vendor/bin/sail build || warn "Sail build had errors — run manually with: ./vendor/bin/sail build"
-
-# Fix permissions
-if command -v doas > /dev/null 2>&1; then
-    doas chown -R $USER: .
-elif command -v sudo > /dev/null 2>&1; then
-    sudo chown -R $USER: .
-fi
 
 # Summary
 echo ""
