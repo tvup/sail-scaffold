@@ -22,8 +22,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+RUN npm install
 
 COPY . .
 
