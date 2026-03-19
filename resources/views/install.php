@@ -63,7 +63,10 @@ echo -e "${YELLOW}⟦1/4⟧ Creating Laravel project via Sail...${NC}"
 docker pull "$DOCKER_IMAGE" 2>/dev/null && echo -e "${GREEN}✓ Using latest image from Docker Hub${NC}" \
     || echo -e "${YELLOW}  Image not found on Docker Hub — using local image${NC}"
 
-SCAFFOLD_OUTPUT=$(docker run --rm \
+SCAFFOLD_TMPFILE=$(mktemp)
+trap "rm -f $SCAFFOLD_TMPFILE" EXIT
+
+docker run --rm \
     -v "$(pwd)":/opt \
     -w /opt \
     "$DOCKER_IMAGE" \
@@ -95,10 +98,11 @@ SCAFFOLD_OUTPUT=$(docker run --rm \
 <?php } ?>
         if [ -n "$FAILED" ]; then echo "PARTIAL_FAIL:$FAILED"; fi
         echo "SCAFFOLD_OK"
-    ' 2>&1)
+    ' 2>&1 | tee "$SCAFFOLD_TMPFILE"
+
+SCAFFOLD_OUTPUT=$(cat "$SCAFFOLD_TMPFILE")
 
 if ! echo "$SCAFFOLD_OUTPUT" | grep -q "SCAFFOLD_OK"; then
-    echo "$SCAFFOLD_OUTPUT"
     echo -e "${RED}Failed to scaffold project. Aborting.${NC}"
     exit 1
 fi

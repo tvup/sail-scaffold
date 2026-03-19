@@ -315,6 +315,24 @@ class InstallScriptTest extends TestCase
         $response->assertSee('PARTIAL_FAIL:', false);
     }
 
+    public function test_install_script_streams_docker_output_via_tee(): void
+    {
+        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
+
+        $response = $this->get('/my-app');
+        $content = $response->getContent();
+
+        $response->assertStatus(200);
+        // Output is streamed via tee to a temp file
+        $response->assertSee('SCAFFOLD_TMPFILE=$(mktemp)', false);
+        $response->assertSee('| tee "$SCAFFOLD_TMPFILE"', false);
+        $response->assertSee('SCAFFOLD_OUTPUT=$(cat "$SCAFFOLD_TMPFILE")', false);
+        // Temp file is cleaned up
+        $response->assertSee('trap "rm -f $SCAFFOLD_TMPFILE" EXIT', false);
+        // Output is NOT captured via command substitution
+        $this->assertStringNotContainsString('SCAFFOLD_OUTPUT=$(docker run', $content);
+    }
+
     public function test_install_script_includes_post_install_commands(): void
     {
         BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
