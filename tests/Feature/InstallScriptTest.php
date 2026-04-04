@@ -221,7 +221,7 @@ class InstallScriptTest extends TestCase
         $response = $this->get('/my-app');
 
         $response->assertStatus(200);
-        $response->assertSee('compose.override.yml', false);
+        $response->assertSee('compose.override.yaml', false);
         $response->assertSee('ports:', false);
         $response->assertSee("'3307:3306'", false);
     }
@@ -233,7 +233,7 @@ class InstallScriptTest extends TestCase
         $response = $this->get('/my-app');
 
         $response->assertStatus(200);
-        $response->assertDontSee('compose.override.yml', false);
+        $response->assertDontSee('compose.override.yaml', false);
     }
 
     public function test_install_script_includes_sail_services_with_config_in_sail_install(): void
@@ -246,7 +246,7 @@ class InstallScriptTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('SERVICES="mysql,redis"', false);
         $response->assertSee('sail:install --with=', false);
-        $response->assertSee('compose.override.yml', false);
+        $response->assertSee('compose.override.yaml', false);
     }
 
     public function test_install_script_skips_disabled_items(): void

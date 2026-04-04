@@ -67,6 +67,7 @@ SCAFFOLD_TMPFILE=$(mktemp)
 trap "rm -f $SCAFFOLD_TMPFILE" EXIT
 
 docker run --rm \
+    --network host \
     -v "$(pwd)":/opt \
     -w /opt \
     "$DOCKER_IMAGE" \
@@ -173,8 +174,8 @@ FILEEOF
 <?php } ?>
 
 <?php if ($sailServiceOverrides->isNotEmpty()) { ?>
-echo -e "${YELLOW}Creating compose.override.yml...${NC}"
-cat > compose.override.yml << 'OVERRIDEEOF'
+echo -e "${YELLOW}Creating compose.override.yaml...${NC}"
+cat > compose.override.yaml << 'OVERRIDEEOF'
 services:
 <?php foreach ($sailServiceOverrides as $override) { ?>
     <?php echo e($override->name); ?>:
@@ -188,8 +189,8 @@ echo -e "${GREEN}✓ Sail service overrides applied${NC}"
 <?php if ($dockerServices->isNotEmpty()) { ?>
 echo -e "${YELLOW}⟦2/4⟧ Adding custom Docker services...${NC}"
 
-# Append custom services to compose.yml
-cat >> compose.yml << 'DOCKEREOF'
+# Append custom services to compose.yaml
+cat >> compose.yaml << 'DOCKEREOF'
 <?php foreach ($dockerServices as $service) { ?>
     <?php echo e($service->name); ?>:
 <?php echo $service->config; ?>
