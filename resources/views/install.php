@@ -189,14 +189,28 @@ echo -e "${GREEN}✓ Sail service overrides applied${NC}"
 <?php if ($dockerServices->isNotEmpty()) { ?>
 echo -e "${YELLOW}⟦2/4⟧ Adding custom Docker services...${NC}"
 
-# Append custom services to compose.yaml
-cat >> compose.yaml << 'DOCKEREOF'
+# Insert custom services before the top-level 'networks:' key
+NETWORK_LINE=$(grep -n '^networks:' compose.yaml | head -1 | cut -d: -f1)
+if [ -n "$NETWORK_LINE" ]; then
+    head -n $((NETWORK_LINE - 1)) compose.yaml > compose.yaml.tmp
+    cat >> compose.yaml.tmp << 'DOCKEREOF'
 <?php foreach ($dockerServices as $service) { ?>
     <?php echo e($service->name); ?>:
 <?php echo $service->config; ?>
 
 <?php } ?>
 DOCKEREOF
+    tail -n +${NETWORK_LINE} compose.yaml >> compose.yaml.tmp
+    mv compose.yaml.tmp compose.yaml
+else
+    cat >> compose.yaml << 'DOCKEREOF'
+<?php foreach ($dockerServices as $service) { ?>
+    <?php echo e($service->name); ?>:
+<?php echo $service->config; ?>
+
+<?php } ?>
+DOCKEREOF
+fi
 
 echo -e "${GREEN}✓ Custom Docker services added${NC}"
 <?php } else { ?>
