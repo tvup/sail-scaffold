@@ -1,4 +1,4 @@
-FROM php:8.4-cli AS base
+FROM php:8.5-cli AS base
 
 RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
