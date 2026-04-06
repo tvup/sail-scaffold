@@ -25,9 +25,9 @@ After completion, any configured **post-install commands** run (e.g. `sail up -d
 
 ## Service Selection
 
-Without parameters, the install script uses the default-enabled services configured in the admin panel.
+The welcome page lets you interactively toggle services between **Included** and **Excluded** — the generated `curl` command updates automatically with the correct `with` query parameter.
 
-Use the `with` query parameter to **override** the defaults entirely:
+Without parameters, the install script uses the default-enabled services configured in the admin panel. Use the `with` query parameter to **override** the defaults entirely:
 
 ```bash
 # Only MySQL and Redis (ignores admin defaults)
@@ -40,6 +40,8 @@ curl -s "http://localhost/my-app?with=pgsql,redis,mailpit" | bash
 ### Available Services
 
 `mysql`, `pgsql`, `mariadb`, `redis`, `memcached`, `meilisearch`, `typesense`, `minio`, `mailpit`, `selenium`, `soketi`, `valkey`
+
+Any custom Docker services configured in the admin panel are also shown on the welcome page.
 
 ## Admin Panel
 
