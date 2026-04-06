@@ -251,4 +251,5 @@ echo -e "${CYAN}    cd ${APP_NAME} && ./vendor/bin/sail up${NC}"
 echo ""
 
 # Drop into the project directory
+read -t 0.1 -n 10000 discard < /dev/tty 2>/dev/null || true
 exec $SHELL < /dev/tty
