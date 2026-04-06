@@ -1,8 +1,6 @@
 <?php
 
 return [
-    'docker_image' => env('BOILERPLATE_DOCKER_IMAGE', 'laravelsail/php85-composer:latest'),
-
     'placeholders' => [
         ':APP_NAME:' => [
             'description' => 'The project name from the URL',

@@ -89,7 +89,6 @@ class InstallScriptController extends Controller
             'hasVitePlugin' => $hasVitePlugin,
             'placeholders' => $placeholders,
             'commands' => $commands,
-            'dockerImage' => config('boilerplate.docker_image'),
         ])->render();
 
         return response($script, 200, [

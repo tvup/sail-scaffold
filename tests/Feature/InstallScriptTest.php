@@ -24,17 +24,6 @@ class InstallScriptTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
         $response->assertSee('APP_NAME="my-test-app"', false);
-        $response->assertSee('DOCKER_IMAGE=', false);
-    }
-
-    public function test_install_script_uses_configurable_docker_image(): void
-    {
-        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
-
-        $response = $this->get('/my-app');
-
-        $response->assertStatus(200);
-        $response->assertSee('DOCKER_IMAGE="laravelsail/php85-composer:latest"', false);
     }
 
     public function test_install_script_ensures_sail_is_installed_before_sail_install(): void
@@ -45,16 +34,6 @@ class InstallScriptTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('composer show laravel/sail 2>/dev/null || composer require laravel/sail --no-interaction', false);
-    }
-
-    public function test_install_script_pulls_image_before_docker_run(): void
-    {
-        BoilerplateSailService::factory()->create(['name' => 'mysql', 'enabled' => true]);
-
-        $response = $this->get('/my-app');
-
-        $response->assertStatus(200);
-        $response->assertSee('docker pull "$DOCKER_IMAGE"', false);
     }
 
     public function test_install_script_does_not_use_set_e(): void
