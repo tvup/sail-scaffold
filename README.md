@@ -70,7 +70,6 @@ Custom files and commands support placeholders that resolve at install time:
 
 `config/boilerplate.php` defines:
 
-- **`docker_image`** — Base Docker image (default: `laravelsail/php85-composer:latest`)
 - **`placeholders`** — Placeholder definitions and their resolution rules
 
 ## Development

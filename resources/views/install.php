@@ -2,7 +2,6 @@
 
 APP_NAME="<?php echo e($appName); ?>"
 SERVICES="<?php echo e($servicesString); ?>"
-DOCKER_IMAGE="<?php echo e($dockerImage); ?>"
 
 # Colors
 RED='\033[0;31m'
@@ -59,10 +58,6 @@ $hasPackages = $composerPackages->isNotEmpty() || $npmPackages->isNotEmpty();
 ?>
 echo -e "${YELLOW}⟦1/4⟧ Creating Laravel project via Sail...${NC}"
 
-# Pull latest image from Docker Hub if available, otherwise use local
-docker pull "$DOCKER_IMAGE" 2>/dev/null && echo -e "${GREEN}✓ Using latest image from Docker Hub${NC}" \
-    || echo -e "${YELLOW}  Image not found on Docker Hub — using local image${NC}"
-
 SCAFFOLD_TMPFILE=$(mktemp)
 trap "rm -f $SCAFFOLD_TMPFILE" EXIT
 
@@ -70,9 +65,12 @@ docker run --rm \
     --network host \
     -v "$(pwd)":/opt \
     -w /opt \
-    "$DOCKER_IMAGE" \
+    composer:latest \
     bash -c '
         FAILED=""
+        export PATH="$PATH:$(composer global config bin-dir --absolute --quiet)" && \
+        apk add --no-cache nodejs npm && \
+        composer global require laravel/installer && \
         laravel new '"${APP_NAME}"' --no-interaction && \
         cd '"${APP_NAME}"' && \
         composer show laravel/sail 2>/dev/null || composer require laravel/sail --no-interaction && \
