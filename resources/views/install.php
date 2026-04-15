@@ -121,6 +121,9 @@ fi
 
 cd "$APP_NAME"
 
+# Fix APP_URL (Laravel Installer sets :8000 for artisan serve, but Sail uses port 80)
+sed -i 's|APP_URL=http://localhost:8000|APP_URL=http://localhost|' .env
+
 # Fix permissions (Docker creates files as root)
 if command -v doas &>/dev/null; then
     SUDO="doas"
