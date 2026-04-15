@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BoilerplateController;
+use App\Http\Controllers\Admin\ExportImportController;
 use App\Http\Controllers\InstallScriptController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,9 @@ Route::get('/', WelcomeController::class);
 // Admin GUI
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [BoilerplateController::class, 'index'])->name('index');
+    Route::get('/share', [ExportImportController::class, 'index'])->name('share');
+    Route::get('/export', [ExportImportController::class, 'export'])->name('export');
+    Route::post('/import', [ExportImportController::class, 'import'])->name('import');
 
     Route::get('/sail-services', [BoilerplateController::class, 'sailServices'])->name('sail-services');
     Route::post('/sail-services', [BoilerplateController::class, 'storeSailService'])->name('sail-services.store');

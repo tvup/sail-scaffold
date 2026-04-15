@@ -251,7 +251,7 @@ else
     echo ""
     echo -e "${CYAN}You can fix these manually after starting the project.${NC}"
 fi
-echo -e "${CYAN}    cd ${APP_NAME} && ./vendor/bin/sail up${NC}"
+echo -e "${CYAN}Get started with: cd ${APP_NAME} && ./vendor/bin/sail up${NC}"
 echo ""
 
 # Return to original directory and drop into a clean shell
