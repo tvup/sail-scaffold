@@ -141,6 +141,7 @@ fi
 
 # Fix APP_URL (Laravel Installer sets :8000 for artisan serve, but Sail uses port 80)
 sed -i 's|APP_URL=http://localhost:8000|APP_URL=http://localhost|' .env
+echo 'VITE_PORT=5173' >> .env
 
 # Local file operations (no Docker needed)
 <?php if ($hasVitePlugin) { ?>
