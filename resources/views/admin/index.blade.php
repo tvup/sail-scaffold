@@ -13,13 +13,6 @@
             <span class="text-gray-500 text-sm"> / {{ $sailServices->count() }} active</span>
         </a>
 
-        <a href="{{ route('admin.files') }}" class="block bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-cyan-500 transition-colors">
-            <h2 class="text-lg font-semibold text-white mb-2">Custom Files</h2>
-            <p class="text-gray-400 text-sm mb-4">Files and directories added to new projects</p>
-            <span class="text-cyan-400 font-mono text-2xl">{{ $files->where('enabled', true)->count() }}</span>
-            <span class="text-gray-500 text-sm"> / {{ $files->count() }} active</span>
-        </a>
-
         <a href="{{ route('admin.composer-packages') }}" class="block bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-cyan-500 transition-colors">
             <h2 class="text-lg font-semibold text-white mb-2">Composer Packages</h2>
             <p class="text-gray-400 text-sm mb-4">PHP packages installed in new projects</p>
@@ -32,6 +25,13 @@
             <p class="text-gray-400 text-sm mb-4">JavaScript packages installed in new projects</p>
             <span class="text-cyan-400 font-mono text-2xl">{{ $npmPackages->where('enabled', true)->count() }}</span>
             <span class="text-gray-500 text-sm"> / {{ $npmPackages->count() }} active</span>
+        </a>
+
+        <a href="{{ route('admin.files') }}" class="block bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-cyan-500 transition-colors">
+            <h2 class="text-lg font-semibold text-white mb-2">Custom Files</h2>
+            <p class="text-gray-400 text-sm mb-4">Files and directories added to new projects</p>
+            <span class="text-cyan-400 font-mono text-2xl">{{ $files->where('enabled', true)->count() }}</span>
+            <span class="text-gray-500 text-sm"> / {{ $files->count() }} active</span>
         </a>
 
         <a href="{{ route('admin.docker-services') }}" class="block bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-cyan-500 transition-colors">

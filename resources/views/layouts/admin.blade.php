@@ -13,9 +13,9 @@
                 <a href="{{ route('admin.index') }}" class="text-cyan-400 font-bold text-lg">Boilerplate Admin</a>
                 <div class="flex space-x-4">
                     <a href="{{ route('admin.sail-services') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Sail Services</a>
-                    <a href="{{ route('admin.files') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Files</a>
                     <a href="{{ route('admin.composer-packages') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Composer</a>
                     <a href="{{ route('admin.npm-packages') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">npm</a>
+                    <a href="{{ route('admin.files') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Files</a>
                     <a href="{{ route('admin.docker-services') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Docker Services</a>
                     <a href="{{ route('admin.commands') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Commands</a>
                     <a href="{{ route('admin.share') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Share</a>
