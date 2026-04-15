@@ -31,10 +31,4 @@
             <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded font-medium">Save</button>
         </div>
     </form>
-
-    <form action="{{ route('admin.sail-services.destroy', $service) }}" method="POST" class="mt-4" onsubmit="return confirm('Delete this service?')">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="text-red-400 hover:text-red-300 text-sm">Delete this service</button>
-    </form>
 @endsection
