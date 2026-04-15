@@ -9,6 +9,7 @@ use App\Models\BoilerplateDockerService;
 use App\Models\BoilerplateFile;
 use App\Models\BoilerplateNpmPackage;
 use App\Models\BoilerplateSailService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -307,14 +308,13 @@ class BoilerplateController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'command' => ['required', 'string'],
-            'sort_order' => ['integer'],
             'enabled' => ['boolean'],
         ]);
 
         BoilerplateCommand::query()->create([
             'name' => $validated['name'],
             'command' => $validated['command'],
-            'sort_order' => $validated['sort_order'] ?? 0,
+            'sort_order' => (int) BoilerplateCommand::query()->max('sort_order') + 1,
             'enabled' => $request->boolean('enabled', true),
         ]);
 
@@ -331,14 +331,12 @@ class BoilerplateController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'command' => ['required', 'string'],
-            'sort_order' => ['integer'],
             'enabled' => ['boolean'],
         ]);
 
         $command->update([
             'name' => $validated['name'],
             'command' => $validated['command'],
-            'sort_order' => $validated['sort_order'] ?? 0,
             'enabled' => $request->boolean('enabled'),
         ]);
 
@@ -350,6 +348,24 @@ class BoilerplateController extends Controller
         $command->update(['enabled' => ! $command->enabled]);
 
         return redirect()->route('admin.commands');
+    }
+
+    public function moveCommand(Request $request, BoilerplateCommand $command): JsonResponse
+    {
+        $direction = $request->validate(['direction' => ['required', 'in:up,down']])['direction'];
+
+        $neighbor = BoilerplateCommand::query()
+            ->where('sort_order', $direction === 'up' ? '<' : '>', $command->sort_order)
+            ->orderBy('sort_order', $direction === 'up' ? 'desc' : 'asc')
+            ->first();
+
+        if ($neighbor) {
+            $originalOrder = $command->sort_order;
+            $command->update(['sort_order' => $neighbor->sort_order]);
+            $neighbor->update(['sort_order' => $originalOrder]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     public function destroyCommand(BoilerplateCommand $command): RedirectResponse

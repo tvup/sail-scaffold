@@ -23,10 +23,6 @@
             <textarea name="command" id="command" rows="6" required class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none font-mono text-sm">{{ $command->command }}</textarea>
         </div>
         <div>
-            <label for="sort_order" class="block text-sm text-gray-400 mb-1">Sort order</label>
-            <input type="number" name="sort_order" id="sort_order" value="{{ $command->sort_order }}" class="w-32 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:border-cyan-500 focus:outline-none">
-        </div>
-        <div>
             <label class="flex items-center gap-2 text-sm">
                 <input type="hidden" name="enabled" value="0">
                 <input type="checkbox" name="enabled" value="1" {{ $command->enabled ? 'checked' : '' }} class="rounded">
