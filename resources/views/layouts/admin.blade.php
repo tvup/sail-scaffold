@@ -18,6 +18,7 @@
                     <a href="{{ route('admin.npm-packages') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">npm</a>
                     <a href="{{ route('admin.docker-services') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Docker Services</a>
                     <a href="{{ route('admin.commands') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Commands</a>
+                    <a href="{{ route('admin.share') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">Share</a>
                     <span class="text-gray-600">|</span>
                     <a href="{{ url('/') }}" class="text-gray-300 hover:text-white px-3 py-2 text-sm">&larr; Front Page</a>
                 </div>
