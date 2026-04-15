@@ -47,6 +47,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/commands/{command}/edit', [BoilerplateController::class, 'editCommand'])->name('commands.edit');
     Route::put('/commands/{command}', [BoilerplateController::class, 'updateCommand'])->name('commands.update');
     Route::patch('/commands/{command}/toggle', [BoilerplateController::class, 'toggleCommand'])->name('commands.toggle');
+    Route::patch('/commands/{command}/move', [BoilerplateController::class, 'moveCommand'])->name('commands.move');
     Route::delete('/commands/{command}', [BoilerplateController::class, 'destroyCommand'])->name('commands.destroy');
 });
 

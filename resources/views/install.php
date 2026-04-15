@@ -2,6 +2,7 @@
 
 APP_NAME="<?php echo e($appName); ?>"
 SERVICES="<?php echo e($servicesString); ?>"
+ORIG_DIR="$(pwd)"
 
 # Colors
 RED='\033[0;31m'
@@ -139,6 +140,9 @@ else
     $SUDO chown -R $USER: .
 fi
 
+# Fix APP_URL (Laravel Installer sets :8000 for artisan serve, but Sail uses port 80)
+sed -i 's|APP_URL=http://localhost:8000|APP_URL=http://localhost|' .env
+
 # Local file operations (no Docker needed)
 <?php if ($hasVitePlugin) { ?>
 cat > vite.config.js << 'VITEEOF'
@@ -250,6 +254,7 @@ fi
 echo -e "${CYAN}    cd ${APP_NAME} && ./vendor/bin/sail up${NC}"
 echo ""
 
-# Drop into the project directory
+# Return to original directory and drop into a clean shell
+cd "$ORIG_DIR"
 read -t 0.1 -n 10000 discard < /dev/tty 2>/dev/null || true
 exec $SHELL < /dev/tty

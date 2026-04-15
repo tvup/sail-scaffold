@@ -7,19 +7,6 @@
     <p class="text-gray-400 text-sm mb-6">Built-in Laravel Sail services. The enabled services below are the defaults — included when no <code class="text-cyan-400">with</code> parameter is specified. When <code class="text-cyan-400">with</code> is provided, only the specified services are used, overriding these defaults.</p>
     <p class="text-gray-400 text-sm mb-6">Example: <code class="text-cyan-400">curl -s "{{ url('/') }}/example-app?with=mysql,redis" | bash</code></p>
 
-    {{-- Add new --}}
-    <form action="{{ route('admin.sail-services.store') }}" method="POST" class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
-        @csrf
-        <div class="space-y-4">
-            <div>
-                <label for="name" class="block text-sm text-gray-400 mb-1">Service name</label>
-                <input type="text" name="name" id="name" required placeholder="e.g. pgsql" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none">
-            </div>
-            <button type="submit" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded font-medium">Add Service</button>
-        </div>
-    </form>
-
-    {{-- List --}}
     <div class="bg-gray-800 rounded-lg border border-gray-700 divide-y divide-gray-700">
         @forelse ($services as $service)
             <div class="flex items-center justify-between px-6 py-3">
